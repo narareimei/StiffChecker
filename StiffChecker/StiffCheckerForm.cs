@@ -185,7 +185,7 @@ namespace Stiff
 
             foreach( var file in files ) 
             {
-                var info = this.stiffer.GetInformations(file);
+                var info = this.stiffer.GetBookInformations(file);
                 list.Add(info);
             }
             return list.ToArray();

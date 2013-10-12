@@ -143,7 +143,7 @@ namespace Stiff
                     Assert.True(st.GetBuiltinProperty(oBook, "Subject") == "Stiff", "サブタイトル");
                     Assert.True(st.GetBuiltinProperty(oBook, "Company") == "個人", "会社");
                     Assert.True(st.GetBuiltinProperty(oBook, "Manager") == "わし", "管理者" + st.GetBuiltinProperty(oBook, "Manager"));
-                    Assert.True(st.GetBuiltinProperty(oBook, "Last Save Time") == "2013/10/01 23:03:27", "前回保存日時");
+                    Assert.True(st.GetBuiltinProperty(oBook, "Last Save Time") == "2013/10/13 5:49:18", "前回保存日時");
                 }
                 finally
                 {
@@ -168,7 +168,7 @@ namespace Stiff
             {
                 var cd = System.IO.Directory.GetCurrentDirectory();
 
-                var info = st.GetInformations(cd + @"\Hoge.xlsx");
+                var info = st.GetBookInformations(cd + @"\Hoge.xlsx");
             }
             finally
             {
@@ -184,7 +184,7 @@ namespace Stiff
             {
                 var cd = System.IO.Directory.GetCurrentDirectory();
 
-                var info = st.GetInformations(cd + @"\TestBook.xlsx");
+                var info = st.GetBookInformations(cd + @"\TestBook.xlsx");
 
                 Assert.True(info != null, "ヌルチェック");
                 Assert.True(info.Author         == "小林礼明", "Author");
@@ -192,7 +192,7 @@ namespace Stiff
                 Assert.True(info.Subject        == "Stiff", "サブタイトル");
                 Assert.True(info.Company        == "個人", "会社");
                 Assert.True(info.Manager        == "わし", "管理者");
-                Assert.True(info.LastSaveTime   == "2013/10/01 23:03:27", "前回保存日時");
+                Assert.True(info.LastSaveTime   == "2013/10/13 5:49:18", "前回保存日時");
             }
             finally
             {
@@ -209,7 +209,7 @@ namespace Stiff
             {
                 var cd = System.IO.Directory.GetCurrentDirectory();
 
-                var info = st.GetInformations(cd + @"\Stiff.exe");
+                var info = st.GetBookInformations(cd + @"\StiffChecker.exe");
                 Assert.True( info.LastSaveTime == "" );
             }
             finally
@@ -230,7 +230,7 @@ namespace Stiff
 
                 try
                 {
-                    BookInfo info = this.GetInformations(cd + @"\TestBook.xlsx");
+                    BookInfo info = this.GetBookInformations(cd + @"\TestBook.xlsx");
 
                     info.Author  = "kobayashi";
                     info.Title   = "Modified";
@@ -248,7 +248,7 @@ namespace Stiff
                     Assert.True(st.GetBuiltinProperty(oBook, "Subject"       ) == "Tool", "サブタイトル");
                     Assert.True(st.GetBuiltinProperty(oBook, "Company"       ) == "The Man", "会社");
                     Assert.True(st.GetBuiltinProperty(oBook, "Manager"       ) == "Myself", "管理者" + st.GetBuiltinProperty(oBook, "Manager"));
-                    Assert.True(st.GetBuiltinProperty(oBook, "Last Save Time") == "2013/10/01 23:03:27", "前回保存日時");
+                    Assert.True(st.GetBuiltinProperty(oBook, "Last Save Time") == "2013/10/13 5:49:18", "前回保存日時");
                 }
                 finally
                 {
@@ -262,5 +262,57 @@ namespace Stiff
                 st.Dispose();
             }
         }
+
+        [Test]
+        public void シート情報_該当あり_シート１()
+        {
+            Excel.Workbook   oBook          = null;
+            Excel.Sheets     oSheets        = null;
+            Excel.Worksheet  oSheet         = null;
+
+            var st = Stiffer.GetInstance();
+            try
+            {
+                st.CreateApplication();
+
+                var cd = System.IO.Directory.GetCurrentDirectory();
+                oBook   = st.OpenBook(cd + @"\TestBook.xlsx");
+                oSheets = oBook.Worksheets;
+                oSheet  = (Excel.Worksheet)oSheets[1];
+
+                var info = st.GetSheetInformation(oSheet);
+
+
+                Assert.True(info                != null,    "ヌルチェック");
+                Assert.True(info.Name           == "First", "Name");
+                Assert.True(info.CellPosition.X == 2,        "Cell.Left");
+                Assert.True(info.CellPosition.Y == 2,        "Cell.Top");
+                Assert.True(info.Zoom           == 175,      "Zoom");
+                Assert.True(info.Gridlines      == true,     "Gridlines");
+                Assert.True(info.View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                                                             "View");
+            }
+            finally
+            {
+                if (oSheet != null)
+                    Marshal.ReleaseComObject(oSheet);
+                oSheet = null;
+
+                if (oSheets != null)
+                    Marshal.ReleaseComObject(oSheets);
+                oSheets = null;
+
+                if (oBook != null)
+                    Marshal.ReleaseComObject(oBook);
+                oBook = null;
+
+                st.Dispose();
+            }
+            return;
+        }
+    
+    
+    
+    
     }
 }
