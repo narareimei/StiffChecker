@@ -21,6 +21,7 @@ namespace Stiff
 
         public String FileName      { get; set; }
         public String LastSaveTime  { get; set; }
+        public String FirstVisibleSheetName{ get; set; }
         public bool? Result         { get; set; }
 
         public SheetInfo[] Sheets   { get; set; }
@@ -28,7 +29,7 @@ namespace Stiff
 
         public BookInfo()
         {
-            this.CheckResult = new[] { true, true, true, true };
+            this.CheckResult = new[] { true, true, true, true, true };
         }
     }
 
@@ -102,6 +103,7 @@ namespace Stiff
         public BookInfo GetBookInformations(string filename)
         {
             Excel.Workbook oBook = null;
+            Excel.Worksheet oSheet = null;
             BookInfo info = null ;
             try
             {
@@ -125,9 +127,24 @@ namespace Stiff
                 info.Company        = this.GetBuiltinProperty(oBook, "Company");
                 info.LastSaveTime   = this.GetBuiltinProperty(oBook, "Last Save Time");
                 info.Sheets         = this.GetSheetInformations(oBook);
+                info.FirstVisibleSheetName
+                                    = this.GetFirstVisibleSheetName(oBook);
+
+                // 選択シートが先頭シートになっているかの確認
+                oSheet = (Excel.Worksheet)oBook.ActiveSheet;
+                if (oSheet.Name != info.FirstVisibleSheetName)
+                {
+                    info.CheckResult[4] = false;
+                }
             }
             finally
             {
+                if (oSheet != null)
+                {
+                    Marshal.ReleaseComObject(oSheet);
+                }
+                oSheet = null;
+
                 if (oBook != null)
                 {
                     oBook.Close(false, filename, Type.Missing);
@@ -553,6 +570,47 @@ namespace Stiff
             }
             return;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oBook"></param>
+        /// <returns></returns>
+        private String GetFirstVisibleSheetName(Excel.Workbook oBook)
+        {
+            Debug.Assert(oBook != null);
+
+            Excel.Sheets oSheets = oBook.Worksheets;
+            Excel.Worksheet oSheet = null;
+            try
+            {
+                for (int i = 1; i <= oSheets.Count; ++i)
+                {
+                    oSheet = (Excel.Worksheet)oSheets[i];
+
+                    if (oSheet.Visible == Microsoft.Office.Interop.Excel.XlSheetVisibility.xlSheetVisible)
+                    {
+                        return oSheet.Name;
+                    }
+                    Marshal.ReleaseComObject(oSheet);
+                    oSheet = null;
+
+                }
+            }
+            finally
+            {
+                if (oSheet != null)
+                {
+                    Marshal.ReleaseComObject(oSheet);
+                }
+                oSheet = null;
+
+                Marshal.ReleaseComObject(oSheets);
+                oSheets = null;
+            }
+            return "";
+        }
+
 
         #endregion
 

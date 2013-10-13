@@ -47,10 +47,11 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.bookGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.bookGrid.Location = new System.Drawing.Point(12, 12);
+            this.bookGrid.MultiSelect = false;
             this.bookGrid.Name = "bookGrid";
             this.bookGrid.ReadOnly = true;
             this.bookGrid.RowTemplate.Height = 21;
-            this.bookGrid.Size = new System.Drawing.Size(1041, 352);
+            this.bookGrid.Size = new System.Drawing.Size(1145, 352);
             this.bookGrid.TabIndex = 1;
             // 
             // StiffCheckerForm
@@ -58,7 +59,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1064, 378);
+            this.ClientSize = new System.Drawing.Size(1168, 378);
             this.Controls.Add(this.bookGrid);
             this.Name = "StiffCheckerForm";
             this.Text = "StiffForm";

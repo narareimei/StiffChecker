@@ -60,6 +60,7 @@ namespace Stiff
                 dt.Columns.Add(new DataColumn("倍率",       typeof(string)));
                 dt.Columns.Add(new DataColumn("枠線",       typeof(string)));
                 dt.Columns.Add(new DataColumn("表示",       typeof(string)));
+                dt.Columns.Add(new DataColumn("シート",     typeof(string)));
                 // プライマリキー設定
                 var pk = new DataColumn[1];
                 pk[0] = dt.Columns["File"];
@@ -177,10 +178,11 @@ namespace Stiff
             row["Update"    ] = info.LastSaveTime;
             row["Company"   ] = info.Company;
             row["Manager"   ] = info.Manager;
-            row["セル位置"] = (info.CheckResult[0] == null) ? "" : (info.CheckResult[0] == true ? "OK" : "NG"); ;
-            row["倍率"]     = (info.CheckResult[1] == null) ? "" : (info.CheckResult[1] == true ? "OK" : "NG"); ;
-            row["枠線"]     = (info.CheckResult[2] == null) ? "" : (info.CheckResult[2] == true ? "OK" : "NG"); ;
-            row["表示"]     = (info.CheckResult[3] == null) ? "" : (info.CheckResult[3] == true ? "OK" : "NG"); ;
+            row["セル位置"  ] = (info.CheckResult[0] == true ? "OK" : "NG");
+            row["倍率"      ] = (info.CheckResult[1] == true ? "OK" : "NG");
+            row["枠線"      ] = (info.CheckResult[2] == true ? "OK" : "NG");
+            row["表示"      ] = (info.CheckResult[3] == true ? "OK" : "NG");
+            row["シート"    ] = (info.CheckResult[4] == true ? "OK" : "NG");
             excelFiles.Rows.Add(row);
             return;
         }
@@ -196,13 +198,11 @@ namespace Stiff
             // この値が基準だ
             var criteria = new SheetInfo
             {
-                Name = "",
-                CellPosition = new System.Drawing.Point(1, 1),
-                Zoom = 100,
-                Gridlines = false,
-                View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                CellPosition    = new System.Drawing.Point(1, 1),
+                Zoom            = 100,
+                Gridlines       = false,
+                View            = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
             };
-
 
             foreach( var file in files ) 
             {
@@ -221,9 +221,10 @@ namespace Stiff
             foreach (DataGridViewRow row in bookGrid.Rows)
             {
                 if( (string)row.Cells["セル位置"].Value == "NG" ||
-                    (string)row.Cells["倍率"].Value == "NG" ||
-                    (string)row.Cells["枠線"].Value == "NG" ||
-                    (string)row.Cells["表示"].Value == "NG")
+                    (string)row.Cells["倍率"].Value     == "NG" ||
+                    (string)row.Cells["枠線"].Value     == "NG" ||
+                    (string)row.Cells["表示"].Value     == "NG" ||
+                    (string)row.Cells["シート"].Value   == "NG")
                 {
                     row.DefaultCellStyle.BackColor = Color.Yellow;
                 }
