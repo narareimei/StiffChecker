@@ -193,6 +193,29 @@ namespace Stiff
                 Assert.True(info.Company        == "個人", "会社");
                 Assert.True(info.Manager        == "わし", "管理者");
                 Assert.True(info.LastSaveTime   == "2013/10/13 5:49:18", "前回保存日時");
+
+                Assert.True(info.Sheets[0].Name           == "First", "Name");
+                Assert.True(info.Sheets[0].CellPosition.X == 2,        "Cell.Left");
+                Assert.True(info.Sheets[0].CellPosition.Y == 2,        "Cell.Top");
+                Assert.True(info.Sheets[0].Zoom           == 175,      "Zoom");
+                Assert.True(info.Sheets[0].Gridlines      == true,     "Gridlines");
+                Assert.True(info.Sheets[0].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                                                             "View");
+                Assert.True(info.Sheets[1].Name           == "Second", "Name");
+                Assert.True(info.Sheets[1].CellPosition.X == 6,        "Cell.Left");
+                Assert.True(info.Sheets[1].CellPosition.Y == 7,        "Cell.Top");
+                Assert.True(info.Sheets[1].Zoom           == 90,       "Zoom");
+                Assert.True(info.Sheets[1].Gridlines      == false,    "Gridlines");
+                Assert.True(info.Sheets[1].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                                                             "View");
+                Assert.True(info.Sheets[2].Name           == "Third", "Name");
+                Assert.True(info.Sheets[2].CellPosition.X == 3,        "Cell.Left");
+                Assert.True(info.Sheets[2].CellPosition.Y == 10,       "Cell.Top");
+                Assert.True(info.Sheets[2].Zoom           == 60,       "Zoom");
+                Assert.True(info.Sheets[2].Gridlines      == false,    "Gridlines");
+                Assert.True(info.Sheets[2].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlPageBreakPreview,
+                                                             "View");
+
             }
             finally
             {
@@ -310,7 +333,66 @@ namespace Stiff
             }
             return;
         }
-    
+
+
+        [Test]
+        public void ブックのシート情報取得()
+        {
+            Excel.Workbook oBook = null;
+            Excel.Sheets oSheets = null;
+            Excel.Worksheet oSheet = null;
+
+            var st = Stiffer.GetInstance();
+            try
+            {
+                st.CreateApplication();
+
+                var cd = System.IO.Directory.GetCurrentDirectory();
+                oBook = st.OpenBook(cd + @"\TestBook.xlsx");
+
+                var infos = st.GetSheetInformations(oBook);
+
+                Assert.True(infos                   != null, "ヌルチェック");
+                Assert.True(infos[0].Name           == "First", "Name");
+                Assert.True(infos[0].CellPosition.X == 2,        "Cell.Left");
+                Assert.True(infos[0].CellPosition.Y == 2,        "Cell.Top");
+                Assert.True(infos[0].Zoom           == 175,      "Zoom");
+                Assert.True(infos[0].Gridlines      == true,     "Gridlines");
+                Assert.True(infos[0].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                                                             "View");
+                Assert.True(infos[1].Name           == "Second", "Name");
+                Assert.True(infos[1].CellPosition.X == 6,        "Cell.Left");
+                Assert.True(infos[1].CellPosition.Y == 7,        "Cell.Top");
+                Assert.True(infos[1].Zoom           == 90,       "Zoom");
+                Assert.True(infos[1].Gridlines      == false,    "Gridlines");
+                Assert.True(infos[1].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                                                             "View");
+                Assert.True(infos[2].Name           == "Third", "Name");
+                Assert.True(infos[2].CellPosition.X == 3,        "Cell.Left");
+                Assert.True(infos[2].CellPosition.Y == 10,       "Cell.Top");
+                Assert.True(infos[2].Zoom           == 60,       "Zoom");
+                Assert.True(infos[2].Gridlines      == false,    "Gridlines");
+                Assert.True(infos[2].View           == Microsoft.Office.Interop.Excel.XlWindowView.xlPageBreakPreview,
+                                                             "View");
+            }
+            finally
+            {
+                if (oSheet != null)
+                    Marshal.ReleaseComObject(oSheet);
+                oSheet = null;
+
+                if (oSheets != null)
+                    Marshal.ReleaseComObject(oSheets);
+                oSheets = null;
+
+                if (oBook != null)
+                    Marshal.ReleaseComObject(oBook);
+                oBook = null;
+
+                st.Dispose();
+            }
+            return;
+        }
     
     
     

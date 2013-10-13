@@ -13,15 +13,17 @@ namespace Stiff
 {
     public class BookInfo
     {
-        public String Author { get; set; }
-        public String Title { get; set; }
-        public String Subject { get; set; }
-        public String Manager { get; set; }
-        public String Company { get; set; }
+        public String Author        { get; set; }
+        public String Title         { get; set; }
+        public String Subject       { get; set; }
+        public String Manager       { get; set; }
+        public String Company       { get; set; }
 
-        public String FileName { get; set; }
-        public String LastSaveTime { get; set; }
-        public bool? Result { get; set; }
+        public String FileName      { get; set; }
+        public String LastSaveTime  { get; set; }
+        public bool? Result         { get; set; }
+
+        public SheetInfo[] Sheets   { get; set; }
     }
 
     public class SheetInfo
@@ -116,6 +118,7 @@ namespace Stiff
                 info.Manager        = this.GetBuiltinProperty(oBook, "Manager");
                 info.Company        = this.GetBuiltinProperty(oBook, "Company");
                 info.LastSaveTime   = this.GetBuiltinProperty(oBook, "Last Save Time");
+                info.Sheets         = this.GetSheetInformations(oBook);
             }
             finally
             {
@@ -127,6 +130,35 @@ namespace Stiff
                 oBook = null;
             }
             return info;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oBook"></param>
+        /// <returns></returns>
+        public SheetInfo[] GetSheetInformations(Excel.Workbook oBook)
+        {
+            var infos = new List<SheetInfo>();
+            Excel.Sheets    oSheets = oBook.Worksheets;
+
+            try
+            {
+                for (int i = 1; i <= oSheets.Count; ++i)
+                {
+                    var oSheet = (Excel.Worksheet)oSheets[i];
+
+                    infos.Add( this.GetSheetInformation(oSheet) );
+                    Marshal.ReleaseComObject(oSheet);
+                    oSheet = null;
+                }
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(oSheets);
+                oSheets = null;
+            }
+            return infos.ToArray();
         }
 
         /// <summary>
