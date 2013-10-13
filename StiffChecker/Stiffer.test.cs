@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 using NUnit.Framework;
@@ -393,8 +394,203 @@ namespace Stiff
             }
             return;
         }
-    
-    
+
+        [Test]
+        public void シートチェック_同じ()
+        {
+            var st = Stiffer.GetInstance();
+            try
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+
+                var criteria = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+
+                var sheet = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+                var result = new[] { true, true, true, true };
+
+                st.CompareSheetInfo(criteria, sheet, result);
+                Assert.True(result[0] == true);
+                Assert.True(result[1] == true);
+                Assert.True(result[2] == true);
+                Assert.True(result[3] == true);
+            }
+            finally
+            {
+                st.Dispose();
+            }
+        }
+
+        [Test]
+        public void シートチェック_セル位置違い()
+        {
+            var st = Stiffer.GetInstance();
+            try
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+
+                var criteria = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+
+                var sheet = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(1, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+                var result = new[] { true, true, true, true };
+
+                st.CompareSheetInfo(criteria, sheet, result);
+                Assert.True(result[0] == false);
+                Assert.True(result[1] == true);
+                Assert.True(result[2] == true);
+                Assert.True(result[3] == true);
+            }
+            finally
+            {
+                st.Dispose();
+            }
+        }
+
+        [Test]
+        public void シートチェック_倍率違い()
+        {
+            var st = Stiffer.GetInstance();
+            try
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+
+                var criteria = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+
+                var sheet = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 120,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+                var result = new[] { true, true, true, true };
+
+                st.CompareSheetInfo(criteria, sheet, result);
+                Assert.True(result[0] == true);
+                Assert.True(result[1] == false);
+                Assert.True(result[2] == true);
+                Assert.True(result[3] == true);
+            }
+            finally
+            {
+                st.Dispose();
+            }
+        }
+
+        [Test]
+        public void シートチェック_枠線違い()
+        {
+            var st = Stiffer.GetInstance();
+            try
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+
+                var criteria = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+
+                var sheet = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = true,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+                var result = new[] { true, true, true, true };
+
+                st.CompareSheetInfo(criteria, sheet, result);
+                Assert.True(result[0] == true);
+                Assert.True(result[1] == true);
+                Assert.True(result[2] == false);
+                Assert.True(result[3] == true);
+            }
+            finally
+            {
+                st.Dispose();
+            }
+        }
+
+        [Test]
+        public void シートチェック_表示モード違い()
+        {
+            var st = Stiffer.GetInstance();
+            try
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+
+                var criteria = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                };
+
+                var sheet = new SheetInfo
+                {
+                    Name = "",
+                    CellPosition = new System.Drawing.Point(0, 0),
+                    Zoom = 100,
+                    Gridlines = false,
+                    View = Microsoft.Office.Interop.Excel.XlWindowView.xlPageBreakPreview
+                };
+                var result = new[] { true, true, true, true };
+
+                st.CompareSheetInfo(criteria, sheet, result);
+                Assert.True(result[0] == true);
+                Assert.True(result[1] == true);
+                Assert.True(result[2] == true);
+                Assert.True(result[3] == false);
+            }
+            finally
+            {
+                st.Dispose();
+            }
+        }
+
+
     
     }
 }

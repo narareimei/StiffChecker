@@ -55,7 +55,11 @@ namespace Stiff
                 dt.Columns.Add(new DataColumn("Update",     typeof(string)));   // 更新日時
                 dt.Columns.Add(new DataColumn("Company",    typeof(string)));   // 会社
                 dt.Columns.Add(new DataColumn("Manager",    typeof(string)));   // 管理者
-                dt.Columns.Add(new DataColumn("結果",       typeof(string)));   // 結果
+                // 比較結果
+                dt.Columns.Add(new DataColumn("セル位置",   typeof(string)));
+                dt.Columns.Add(new DataColumn("倍率",       typeof(string)));
+                dt.Columns.Add(new DataColumn("枠線",       typeof(string)));
+                dt.Columns.Add(new DataColumn("表示",       typeof(string)));
                 // プライマリキー設定
                 var pk = new DataColumn[1];
                 pk[0] = dt.Columns["File"];
@@ -105,12 +109,15 @@ namespace Stiff
 
             try
             {
+                excelFiles.Clear();
+
                 var list = getBookInformations(files);
                 foreach (var info in list)
                 {
                     addBookInfo(info);
                     this.bookInfoList.Add(info);
                 }
+                this.GridRefresh();
             }
             finally
             {
@@ -170,7 +177,10 @@ namespace Stiff
             row["Update"    ] = info.LastSaveTime;
             row["Company"   ] = info.Company;
             row["Manager"   ] = info.Manager;
-            row["結果"] = (info.Result == null) ? "" : (info.Result == true ? "OK" : "NG"); ;
+            row["セル位置"] = (info.CheckResult[0] == null) ? "" : (info.CheckResult[0] == true ? "OK" : "NG"); ;
+            row["倍率"]     = (info.CheckResult[1] == null) ? "" : (info.CheckResult[1] == true ? "OK" : "NG"); ;
+            row["枠線"]     = (info.CheckResult[2] == null) ? "" : (info.CheckResult[2] == true ? "OK" : "NG"); ;
+            row["表示"]     = (info.CheckResult[3] == null) ? "" : (info.CheckResult[3] == true ? "OK" : "NG"); ;
             excelFiles.Rows.Add(row);
             return;
         }
@@ -183,9 +193,21 @@ namespace Stiff
         {
             var list = new List<BookInfo>();
 
+            // この値が基準だ
+            var criteria = new SheetInfo
+            {
+                Name = "",
+                CellPosition = new System.Drawing.Point(1, 1),
+                Zoom = 100,
+                Gridlines = false,
+                View = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+            };
+
+
             foreach( var file in files ) 
             {
                 var info = this.stiffer.GetBookInformations(file);
+                this.stiffer.CheckSheetInformations(criteria, info);
                 list.Add(info);
             }
             return list.ToArray();
@@ -198,17 +220,12 @@ namespace Stiff
         {
             foreach (DataGridViewRow row in bookGrid.Rows)
             {
-                switch (row.Cells["結果"].Value.ToString())
+                if( (string)row.Cells["セル位置"].Value == "NG" ||
+                    (string)row.Cells["倍率"].Value == "NG" ||
+                    (string)row.Cells["枠線"].Value == "NG" ||
+                    (string)row.Cells["表示"].Value == "NG")
                 {
-                    case "OK" :
-                        row.DefaultCellStyle.BackColor = Color.LightGreen;
-                        break;
-                    case "NG":
-                        row.DefaultCellStyle.BackColor = Color.Yellow;
-                        break;
-                    default:
-                        row.DefaultCellStyle.BackColor = Color.Gray;
-                        break;
+                    row.DefaultCellStyle.BackColor = Color.Yellow;
                 }
             }
             return;

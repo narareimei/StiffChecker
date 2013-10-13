@@ -24,6 +24,12 @@ namespace Stiff
         public bool? Result         { get; set; }
 
         public SheetInfo[] Sheets   { get; set; }
+        public bool[] CheckResult;
+
+        public BookInfo()
+        {
+            this.CheckResult = new[] { true, true, true, true };
+        }
     }
 
     public class SheetInfo
@@ -135,86 +141,22 @@ namespace Stiff
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="oBook"></param>
-        /// <returns></returns>
-        public SheetInfo[] GetSheetInformations(Excel.Workbook oBook)
+        /// <param name="criteria"></param>
+        /// <param name="book"></param>
+        public void CheckSheetInformations(SheetInfo criteria, BookInfo book)
         {
-            var infos = new List<SheetInfo>();
-            Excel.Sheets    oSheets = oBook.Worksheets;
-
             try
             {
-                for (int i = 1; i <= oSheets.Count; ++i)
+                book.Result = true;
+                foreach (var sheet in book.Sheets)
                 {
-                    var oSheet = (Excel.Worksheet)oSheets[i];
-
-                    infos.Add( this.GetSheetInformation(oSheet) );
-                    Marshal.ReleaseComObject(oSheet);
-                    oSheet = null;
+                    this.CompareSheetInfo(criteria, sheet, book.CheckResult);
                 }
             }
             finally
             {
-                Marshal.ReleaseComObject(oSheets);
-                oSheets = null;
             }
-            return infos.ToArray();
-        }
-
-        /// <summary>
-        /// Excelシート各種情報取得
-        /// </summary>
-        public SheetInfo GetSheetInformation(Excel.Worksheet oSheet )
-        {
-            SheetInfo       info = null;
-            Excel.Range     oCells = null;
-            Excel.Worksheet oActiveSheet = null;
-
-            Debug.Assert(oSheet != null);
-            try
-            {
-                if (oSheet == null)
-                {
-                    return null;
-                }
-
-                // シートをアクティベートする
-                oActiveSheet = (Excel.Worksheet)this._app.ActiveSheet;
-                oSheet.Activate();
-                oCells = this._app.ActiveWindow.ActiveCell;
-
-                // シート情報取得および格納
-                info = new SheetInfo();
-                {
-                    info.Name           = oSheet.Name;
-                    info.Zoom           = (double)this._app.ActiveWindow.Zoom;
-                    info.Gridlines      = this._app.ActiveWindow.DisplayGridlines;
-                    info.View           = this._app.ActiveWindow.View;
-                    info.CellPosition   = new Point((int)this._app.ActiveCell.Column, (int)this._app.ActiveCell.Row);
-                }
-            }
-            finally
-            {
-                if (oActiveSheet != null)
-                {
-                    oActiveSheet.Activate();
-                    Marshal.ReleaseComObject(oActiveSheet);
-                }
-                oActiveSheet = null;
-
-                if (oCells != null)
-                {
-                    Marshal.ReleaseComObject(oCells);
-                }
-                oCells = null;
-
-                if (oSheet != null)
-                {
-                    Marshal.ReleaseComObject(oSheet);
-                }
-                oSheet = null;
-            }
-            return info;
+            return;
         }
 
         /// <summary>
@@ -347,6 +289,7 @@ namespace Stiff
                 }
             }
         }
+
 
         #region private methods
 
@@ -497,6 +440,118 @@ namespace Stiff
             this.SetBuiltinProperty(oBook, "Subject", info.Subject);
             this.SetBuiltinProperty(oBook, "Manager", info.Manager);
             this.SetBuiltinProperty(oBook, "Company", info.Company);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oBook"></param>
+        /// <returns></returns>
+        private SheetInfo[] GetSheetInformations(Excel.Workbook oBook)
+        {
+            var infos = new List<SheetInfo>();
+            Excel.Sheets oSheets = oBook.Worksheets;
+
+            try
+            {
+                for (int i = 1; i <= oSheets.Count; ++i)
+                {
+                    var oSheet = (Excel.Worksheet)oSheets[i];
+
+                    infos.Add(this.GetSheetInformation(oSheet));
+                    Marshal.ReleaseComObject(oSheet);
+                    oSheet = null;
+                }
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(oSheets);
+                oSheets = null;
+            }
+            return infos.ToArray();
+        }
+
+        /// <summary>
+        /// Excelシート各種情報取得
+        /// </summary>
+        private SheetInfo GetSheetInformation(Excel.Worksheet oSheet)
+        {
+            SheetInfo info = null;
+            Excel.Range oCells = null;
+            Excel.Worksheet oActiveSheet = null;
+
+            Debug.Assert(oSheet != null);
+            try
+            {
+                if (oSheet == null)
+                {
+                    return null;
+                }
+
+                // シートをアクティベートする
+                oActiveSheet = (Excel.Worksheet)this._app.ActiveSheet;
+                oSheet.Activate();
+                oCells = this._app.ActiveWindow.ActiveCell;
+
+                // シート情報取得および格納
+                info = new SheetInfo();
+                {
+                    info.Name = oSheet.Name;
+                    info.Zoom = (double)this._app.ActiveWindow.Zoom;
+                    info.Gridlines = this._app.ActiveWindow.DisplayGridlines;
+                    info.View = this._app.ActiveWindow.View;
+                    info.CellPosition = new Point((int)this._app.ActiveCell.Column, (int)this._app.ActiveCell.Row);
+                }
+            }
+            finally
+            {
+                if (oActiveSheet != null)
+                {
+                    oActiveSheet.Activate();
+                    Marshal.ReleaseComObject(oActiveSheet);
+                }
+                oActiveSheet = null;
+
+                if (oCells != null)
+                {
+                    Marshal.ReleaseComObject(oCells);
+                }
+                oCells = null;
+
+                if (oSheet != null)
+                {
+                    Marshal.ReleaseComObject(oSheet);
+                }
+                oSheet = null;
+            }
+            return info;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="criteria"></param>
+        /// <param name="sheet"></param>
+        /// <param name="checkResult"></param>
+        private void CompareSheetInfo(SheetInfo criteria, SheetInfo sheet, bool[] checkResult)
+        {
+            if (criteria.CellPosition != sheet.CellPosition)
+            {
+                checkResult[0] = false;
+            }
+            if (criteria.Zoom != sheet.Zoom)
+            {
+                checkResult[1] = false;
+            }
+            if (criteria.Gridlines != sheet.Gridlines)
+            {
+                checkResult[2] = false;
+            }
+            if (criteria.View != sheet.View)
+            {
+                checkResult[3] = false;
+            }
+            return;
         }
 
         #endregion
