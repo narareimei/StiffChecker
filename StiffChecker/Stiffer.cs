@@ -341,9 +341,9 @@ namespace Stiff
             try
             {
                 oBook = oBooks.Open(
-                              filename,  // オープンするExcelファイル名
+                              filename,     // オープンするExcelファイル名
                               Type.Missing, // （省略可能）UpdateLinks (0 / 1 / 2 / 3)
-                              Type.Missing, // （省略可能）ReadOnly (True / False )
+                              true,         // （省略可能）ReadOnly (True / False )
                               Type.Missing, // （省略可能）Format
                                             //      1:タブ / 2:カンマ (,) / 3:スペース / 4:セミコロン (;)
                                             //      5:なし / 6:引数 Delimiterで指定された文字
