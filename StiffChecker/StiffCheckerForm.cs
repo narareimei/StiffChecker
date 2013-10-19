@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Stiff.Properties;
 
 namespace Stiff
 {
@@ -35,6 +36,14 @@ namespace Stiff
         /// <param name="e"></param>
         private void StiffForm_Load(object sender, EventArgs e)
         {
+            // 画面コントロール初期化
+            {
+                this.zoom.Text          = Settings.Default.zoom.ToString();
+                this.gridOff.Checked    = !Settings.Default.grid;
+                this.gridOn.Checked     = Settings.Default.grid;
+                this.view.Text          = Settings.Default.view;
+            }
+
             // 
             stiffer = Stiffer.GetInstance();
 
@@ -104,49 +113,52 @@ namespace Stiff
         /// <param name="e"></param>
         private void StiffForm_DragDrop(object sender, DragEventArgs e)
         {
-            // ドラッグ＆ドロップされたファイル
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            chekcExcelFiles((string[])e.Data.GetData(DataFormats.FileDrop));
+           return;
+        }
+
+        #endregion //ドラッグアンドドロップ
+
+
+        /// <summary>
+        /// 確認実施
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btRun_Click(object sender, EventArgs e)
+        {
+            if (bookGrid.Rows == null || bookGrid.Rows.Count <= 0)
+            {
+                return;
+            }
+
+            var files = new List<string>();
+            foreach( DataRow row in ((DataTable)this.bookGrid.DataSource).Rows)
+            {
+                files.Add( (string)row["File"] );
+            }
+            chekcExcelFiles(files.ToArray());
+            return ;
+        }
+
+        #endregion //イベントハンドラ
+
+        #region ロジック
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        private void chekcExcelFiles(string[] files)
+        {
             Cursor.Current = Cursors.WaitCursor;
 
             try
             {
                 excelFiles.Clear();
 
-                var list = getBookInformations(files);
-                foreach (var info in list)
-                {
-                    addBookInfo(info);
-                    this.bookInfoList.Add(info);
-                }
-                this.GridRefresh();
-            }
-            finally
-            {
-                Cursor.Current = Cursors.Default;
-            }
-            return;
-        }
-
-        #endregion //ドラッグアンドドロップ
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btUnification_Click(object sender, EventArgs e)
-        {
-            var cd = System.IO.Directory.GetCurrentDirectory();
-            Cursor.Current = Cursors.WaitCursor;
-
-            try
-            {
-                // 設定
-                this.stiffer.Unification(this.bookInfoList.ToArray());
-
-                // グリッドへ反映する
-                this.excelFiles.Rows.Clear();
-                foreach (var info in bookInfoList)
+                this.bookInfoList = getBookInformations(files);
+                foreach (var info in this.bookInfoList)
                 {
                     addBookInfo(info);
                 }
@@ -156,11 +168,8 @@ namespace Stiff
             {
                 Cursor.Current = Cursors.Default;
             }
+            return;        
         }
-
-        #endregion //イベントハンドラ
-
-        #region ロジック
 
         /// <summary>
         /// ブック情報をデータテーブルへ追加する
@@ -191,7 +200,7 @@ namespace Stiff
         /// ブック情報の取得
         /// </summary>
         /// <param name="files">ファイル名配列</param>
-        private BookInfo []  getBookInformations(string[] files)
+        private List<BookInfo>  getBookInformations(string[] files)
         {
             var list = new List<BookInfo>();
 
@@ -199,18 +208,28 @@ namespace Stiff
             var criteria = new SheetInfo
             {
                 CellPosition    = new System.Drawing.Point(1, 1),
-                Zoom            = 100,
-                Gridlines       = false,
-                View            = Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                Zoom            = Double.Parse(this.zoom.Text),
+                Gridlines       = this.gridOn.Checked,
+                View            = this.view.Text == "標準モード" ?
+                                      Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView
+                                    : Microsoft.Office.Interop.Excel.XlWindowView.xlPageBreakPreview
             };
+            // 設定を保存しておく
+            {
+                Settings.Default.zoom   = criteria.Zoom ;
+                Settings.Default.grid   = this.gridOn.Checked;
+                Settings.Default.view   = this.view.Text;
+                Settings.Default.Save();
+            }
 
+            // 情報取得
             foreach( var file in files ) 
             {
                 var info = this.stiffer.GetBookInformations(file);
                 this.stiffer.CheckSheetInformations(criteria, info);
                 list.Add(info);
             }
-            return list.ToArray();
+            return list;
         }
 
         /// <summary>
@@ -233,5 +252,9 @@ namespace Stiff
         }
 
         #endregion //ロジック
+
+
+
+
     }
 }
