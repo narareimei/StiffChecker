@@ -62,7 +62,6 @@ namespace Stiff
         }
 
         [Test]
-        [ExpectedException(typeof(System.Runtime.InteropServices.COMException))]
         public void ワークブックオープン_該当なし()
         {
             var st = Stiffer.GetInstance();
@@ -161,7 +160,6 @@ namespace Stiff
 
 
         [Test]
-        [ExpectedException(typeof(System.Runtime.InteropServices.COMException))]
         public void ブック情報取得_該当なし()
         {
             var st = Stiffer.GetInstance();
@@ -169,7 +167,7 @@ namespace Stiff
             {
                 var cd = System.IO.Directory.GetCurrentDirectory();
 
-                var info = st.GetBookInformations(cd + @"\Hoge.xlsx");
+                Assert.True(st.GetBookInformations(cd + @"\Hoge.xlsx")  == null);
             }
             finally
             {
@@ -306,14 +304,13 @@ namespace Stiff
 
                 var info = st.GetSheetInformation(oSheet);
 
-
-                Assert.True(info                != null,    "ヌルチェック");
-                Assert.True(info.Name           == "First", "Name");
-                Assert.True(info.CellPosition.X == 2,        "Cell.Left");
-                Assert.True(info.CellPosition.Y == 2,        "Cell.Top");
-                Assert.True(info.Zoom           == 175,      "Zoom");
-                Assert.True(info.Gridlines      == true,     "Gridlines");
-                Assert.True(info.View           == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
+                Assert.True(info != null, "ヌルチェック");
+                Assert.True(info.Name == "First", "Name");
+                Assert.True(info.CellPosition.X == 2, "Cell.Left");
+                Assert.True(info.CellPosition.Y == 2, "Cell.Top");
+                Assert.True(info.Zoom == 175, "Zoom");
+                Assert.True(info.Gridlines == true, "Gridlines");
+                Assert.True(info.View == Microsoft.Office.Interop.Excel.XlWindowView.xlNormalView,
                                                              "View");
             }
             finally

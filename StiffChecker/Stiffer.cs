@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Office.Core;
 using System.Reflection;
 using System.Diagnostics;
+using System.IO;
 
 namespace Stiff
 {
@@ -340,6 +341,14 @@ namespace Stiff
 
             try
             {
+                // 事前にファイルの有無を確認。ExcelのOpenを読んでしまうと、
+                // 中間オブジェクトが残ってしまう。
+                if (File.Exists(filename) == false)
+                {
+                    return null;
+                }
+
+
                 oBook = oBooks.Open(
                               filename,     // オープンするExcelファイル名
                               Type.Missing, // （省略可能）UpdateLinks (0 / 1 / 2 / 3)
@@ -493,9 +502,10 @@ namespace Stiff
         /// </summary>
         private SheetInfo GetSheetInformation(Excel.Worksheet oSheet)
         {
-            SheetInfo info = null;
-            Excel.Range oCells = null;
-            Excel.Worksheet oActiveSheet = null;
+            SheetInfo       info            = null;
+            Excel.Range     oCells          = null;
+            Excel.Worksheet oActiveSheet    = null;
+            Excel.Window    oActiveWindow   = null;
 
             Debug.Assert(oSheet != null);
             try
@@ -506,18 +516,19 @@ namespace Stiff
                 }
 
                 // シートをアクティベートする
-                oActiveSheet = (Excel.Worksheet)this._app.ActiveSheet;
+                oActiveSheet    = (Excel.Worksheet)this._app.ActiveSheet;
                 oSheet.Activate();
-                oCells = this._app.ActiveWindow.ActiveCell;
+                oActiveWindow   = this._app.ActiveWindow;
+                oCells          = oActiveWindow.ActiveCell;
 
                 // シート情報取得および格納
                 info = new SheetInfo();
                 {
-                    info.Name = oSheet.Name;
-                    info.Zoom = (double)this._app.ActiveWindow.Zoom;
-                    info.Gridlines = this._app.ActiveWindow.DisplayGridlines;
-                    info.View = this._app.ActiveWindow.View;
-                    info.CellPosition = new Point((int)this._app.ActiveCell.Column, (int)this._app.ActiveCell.Row);
+                    info.Name           = oSheet.Name;
+                    info.Zoom           = (double)oActiveWindow.Zoom;
+                    info.Gridlines      = oActiveWindow.DisplayGridlines;
+                    info.View           = oActiveWindow.View;
+                    info.CellPosition = new Point((int)oCells.Column, (int)oCells.Row);
                 }
             }
             finally
@@ -529,17 +540,17 @@ namespace Stiff
                 }
                 oActiveSheet = null;
 
+                if (oActiveWindow != null)
+                {
+                    Marshal.ReleaseComObject(oActiveWindow);
+                }
+                oActiveWindow = null;
+
                 if (oCells != null)
                 {
                     Marshal.ReleaseComObject(oCells);
                 }
                 oCells = null;
-
-                if (oSheet != null)
-                {
-                    Marshal.ReleaseComObject(oSheet);
-                }
-                oSheet = null;
             }
             return info;
         }
